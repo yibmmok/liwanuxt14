@@ -8,7 +8,7 @@ export default defineNuxtConfig({
             { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         ],
         link: [
-            { rel: 'icon', type: 'image/png', href: '/static/favicon.png' },
+            { rel: 'icon', type: 'image/ico', href: '/static/favicon.ico' },
             {rel: 'stylesheet', type: 'text/css', href: '/assets/css/formkit.css'}
         ],
     },
@@ -16,9 +16,11 @@ export default defineNuxtConfig({
         '@formkit/nuxt',
         '@nuxtjs/tailwindcss',
         '@vueuse/nuxt',
+
     ],
     css: [
         '~/assets/css/base.css',
+
     ], 
     server: {
         port: 8000,

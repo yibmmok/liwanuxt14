@@ -15,7 +15,7 @@
   }
 
   .barPanel {
-    @apply min-h-fit relative bg-white text-black py-3 text-lg rounded-none;
+    @apply min-h-fit relative bg-white text-black py-3 text-lg rounded-none flex flex-row;
   }
 
   /********** liwaGrid 的css starts **********/
@@ -25,7 +25,7 @@
   /********** liwaGrid 的css ends   **********/
 
   .top-icon {
-    @apply w-8 h-8 bg-orange-500 float-left justify-between rounded mr-2 cursor-pointer;
+    @apply w-8 h-8 bg-orange-500 rounded mr-2 cursor-pointer;
   }
 
   .tab-active {

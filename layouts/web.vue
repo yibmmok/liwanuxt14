@@ -19,8 +19,8 @@ useMeta({
 </script>
 
 <script>
-import TheFooter from "~/components/TheFooter.vue"
-import TheHeader from "~/components/TheHeader.vue"
+import TheFooter from "~/components/TheFooter_web.vue"
+import TheHeader from "~/components/TheHeader_web.vue"
 
 export default {
     components: { TheHeader, TheFooter }

@@ -25,17 +25,13 @@
 	}
 
 	const toggleMenu = () => {
-	const { x, y, top, bottom, width, height } = useElementBounding(inputVal.value)
-	console.log('y =', y.value, 'bottom =', bottom.value, 'width =', width.value)	
+	const { x, y, top, bottom, width, height } = useElementBounding(inputVal.value)	
 		if (bottom.value > HeightLimit.value) {
-			console.log('Up Menu')
 			listPos.value = "-top-[16.5rem]"
 		} else {
 			listPos.value = "top-[4.3rem]"
 		}
-
 		isShow.value = !isShow.value
-
 	}
 
 	const getItems = (sValue, sID) => {
@@ -50,14 +46,13 @@
 		arrOption.value = props.context.arrOption
 		const { height } = useWindowSize()
 		HeightLimit.value = height.value * 3/4
-		console.log('HeightLimit =', HeightLimit.value)
 	})
 </script>
 
 <template>
 	<input 
 		ref="inputVal"
-		class="w-[87%] h-10 outline-0 text-md"
+		class="w-[87%] h-10 outline-0 text-md pl-3"
 		:value="showValue"
 		:data-ID="keyID"
 		readonly="readonly"
@@ -67,9 +62,9 @@
 		class="w-full h-72 absolute left-2 bg-white text-md outline-1 z-[100]"
 		:class="listPos"
 	>
-		<ul class="w-[95%] h-72 overflow-x-hidden overflow-y-auto">
+		<ul class="w-[95%] h-72 overflow-x-hidden overflow-y-auto border-2 border-slate-300">
 			<li v-for="(item, index) in arrOption" 
-				class="w-full h-auto pl-2 pt-2 border-b-2 border-b-slate-300 bg-slate-50 cursor-pointer lg:hover:bg-yellow-200"
+				class="w-full min-h-[2rem] h-auto pl-2 pt-2 border-b-2 border-b-slate-300 bg-slate-50 cursor-pointer lg:hover:bg-slate-500"
 				@click="getItems(item.label, item.value)"
 			>{{ item.label }}
 			</li>

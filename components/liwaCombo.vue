@@ -51,7 +51,6 @@
 	}
 
 	const getItems = (sValue, sID) => {
-		console.log('sValue =', sValue, ';sID=', sID)
 		showValue.value = sValue
 		props.context.node.input(sID)
 		keyID.value = sID
@@ -70,7 +69,7 @@
 <template>
 	<input 
 		ref="inputVal"
-		class="w-full h-8 outline-2 text-md"
+		class="w-full h-8 outline-2 text-md pl-3"
 		v-model="showValue"
 		:data-ID="keyID"
 		@click="toggleMenu"
@@ -78,14 +77,21 @@
 		@keydown.esc="clearInput"
 	/>
 	<div v-if="isShow==true" 
-		class="max-w-[16rem] w-full h-48 absolute top-15 left-1 text-md outline outline-1 overflow-x-hidden overflow-y-auto"
+		class="max-w-[16rem] w-full h-48 bg-slate-50 absolute top-15 left-1 text-md outline outline-1 overflow-x-hidden overflow-y-auto"
 	>
 		<ul class="bg-slate-50">
 			<li v-for="item in comboData" 
-				class="w-full h-8 border-b-2 border-b-slate-200 bg-slate-100 cursor-pointer"
+				class="w-full h-8 border-b-2 ml-1 border-b-slate-200 bg-slate-100 cursor-pointer" 
 				@click="getItems(item.label, item.value)"
 			>{{ item.label }}
 			</li>
 		</ul>			
 	</div>	
 </template>
+
+<style scope>
+	li:hover {
+		color:white;
+		background-color:#333;
+	}
+</style>

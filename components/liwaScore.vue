@@ -1,7 +1,8 @@
 <script setup lang="ts">
 	/*********************************************************
-	prog name: 評分系統選項明細CRUD, author: James Lin, date: 2020/06/08
-
+	prog name: 物件評分元件, author: James Lin, date: 2022/11/26
+	Todo: 1. 傳入參數->progressCSS, 
+		  2. 
 	**********************************************************/	
 	import { ref, reactive, onMounted, computed } from "vue"
 	import { useFetch, createFetch, useTitle } from "@vueuse/core"
@@ -9,56 +10,59 @@
 	import { IconX } from '@iconify-prerendered/vue-bi'
 	import gemSysData from "../static/gemSys.json"	
 
+	const emits = defineEmits(["setScore"])
+
 	const error = ref('')
-	const progName = ref('評分程式')
-	const proglink = ref('/023')
-	const detailFlg = ref(false)
-	const detailName = ref('評分程式')	
-	const stitle = ref('123')
 	const liwaSel1 = ref([])
 	const liwaDataA = ref([])
 	const liwaDataB = ref([])
 	const liwaDataC = ref([])
 	const liwaDataD = ref([])
+	const actvGemSys = ref('A')
+	const actvDiamondType = ref('白鑽')
+	const actvDiamondColor = ref('天然色')
+	// const iTotal = ref(0)
 
-	const actvGemSys = ref('')
-	const actvDiamondType = ref('')
-	const actvDiamondColor = ref('')
-	const iTotal = ref(0)
+	const state = reactive({
+		'gemSys': 'A',
+		'iTotal': 0
+	})
 
 	const getTotalScore = () => {
-		iTotal.value = 0
-		switch (actvGemSys.value) {
+		state.iTotal = 0
+		switch (state.gemSys) {
 			case 'A': {
 					liwaDataA.value.forEach((liwaItem) => {
 						let iScore = Number(liwaItem.score)
-						iTotal.value = iTotal.value + iScore
+						state.iTotal = state.iTotal + iScore
 					})
 				}
 				break
 			case 'B': {
 					liwaDataB.value.forEach((liwaItem) => {
 						let iScore = Number(liwaItem.score)
-						iTotal.value = iTotal.value + iScore
+						state.iTotal = state.iTotal + iScore
 					})
 				}
 				break
 			case 'C': {
 					liwaDataC.value.forEach((liwaItem) => {
 						let iScore = Number(liwaItem.score)
-						iTotal.value = iTotal.value + iScore
+						state.iTotal = state.iTotal + iScore
 					})
 				}
 				break
 			case 'D': {
 					liwaDataD.value.forEach((liwaItem) => {
 						let iScore = Number(liwaItem.score)
-						iTotal.value = iTotal.value + iScore
+						state.iTotal = state.iTotal + iScore
 					})
 				}
 				break		
 		}
-	}
+		if (state.iTotal > 100) state.iTotal = 100
+		emits("setScore", state)
+	}	
 
 	const loadOptions = async (sSys) => {
 		let siteID = window.sessionStorage.getItem('liwaSiteID')
@@ -82,37 +86,28 @@
 		loadOptions('B')
 		loadOptions('C')
 		loadOptions('D')
-		liwaSel1.value = gemSysData		
-		actvGemSys.value = 'A'
-		actvDiamondType.value = '白鑽'
-		actvDiamondColor.value = '天然色'
-	})
+		liwaSel1.value = gemSysData
+	})		
+
 </script>
 
 <template>
-<banner
-	v-if="detailName"
-	:progname="progName"
-	:proglink="proglink"
-	:detailflg="detailFlg"
-	:detailName="detailName"
-></banner>
 <div v-if="error">{{ error }}</div>
 <div class="w-full bg-slate-300 px-4 py-2">
 	<div class="barPanel h-16 rounded-3xl ml-4 mb-2 px-1 flex flex-row justify-between relative">
 		<div class="w-72 h-16 text-center mx-auto">
-			<span class="mt-2 mr-2 float-left ">所屬系統: </span>
+			<span class="mt-2 mr-2 float-left ">所屬評分系統: </span>
 			<FormKit
 				name="gemSys"
 				type="select"
 				label=""
 				outer-class="-pt-1"
-				v-model="actvGemSys"
+				v-model="state.gemSys"
 				:options="liwaSel1"
 			/>
 		</div>
-	</div>
-	<div v-if="actvGemSys=='A'" class="w-[900px] mx-auto bg-white p-4">
+	</div>	
+	<div v-if="state.gemSys=='A' && liwaDataA.length > 0" class="w-full mx-auto bg-white p-4">
 		<FormKit 
 			name="DiamondType"
 			type="radio"
@@ -235,7 +230,7 @@
 			:options="liwaDataA[12].arrOption"
 		/>
 	</div>
-	<div v-if="actvGemSys=='B'" class="w-[900px] mx-auto bg-white p-4">
+	<div v-if="state.gemSys=='B' && liwaDataB.length > 0" class="w-full mx-auto bg-white p-4">
 		<div class="w-full h-8 text-blue-500 font-bold">== 顏色 ==</div>	
 		<FormKit
 			:name="liwaDataB[0].QuesID"
@@ -325,7 +320,7 @@
 			:options="liwaDataB[11].arrOption"
 		/>
 	</div>	
-	<div v-if="actvGemSys=='C'" class="w-[900px] mx-auto bg-white p-4">
+	<div v-if="state.gemSys=='C' && liwaDataC.length > 0" class="w-full mx-auto bg-white p-4">
 		<div class="w-full h-8 text-blue-500 font-bold">== 顏色 ==</div>	
 		<FormKit
 			:name="liwaDataC[0].QuesID"
@@ -401,7 +396,7 @@
 			:options="liwaDataC[9].arrOption"
 		/>
 	</div>	
-	<div v-if="actvGemSys=='D'" class="w-[900px] mx-auto bg-white p-4">
+	<div v-if="state.gemSys=='D' && liwaDataD.length > 0" class="w-full mx-auto bg-white p-4">
 		<div class="w-full h-8 text-blue-500 font-bold">== 顏色 ==</div>	
 		<FormKit
 			:name="liwaDataD[0].QuesID"
@@ -476,20 +471,9 @@
 			<legend>物件評分結果</legend>
 			<div class="w-72 h-16 mx-auto my-0 text-blue-600 text-center font-bold">
 				<div class="w-20 h-10 bg-purple-100 rounded-lg text-center leading-10 float-left cursor-pointer" @click="getTotalScore()">評分</div>
-				<span class="text-2xl">{{ iTotal }}</span>
+				<span class="text-2xl">{{ state.iTotal }}</span>
 			</div>
 		</fieldset>
 	</div>		
 </div>	
 </template>
-
-<style scope>
-	.formkit-option {
-		width:50%;
-		float:left;
-	}
-
-	.formkit-outer fieldset.formkit-fieldset {
-		max-width:100%;
-	}
-</style>

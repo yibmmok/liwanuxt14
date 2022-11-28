@@ -1,19 +1,60 @@
 <script setup lang="ts">
 	/*********************************************************
-	prog name: 上傳檔案測試, author: James Lin, date: 2022/11/13
+	prog name: 上傳檔案元件, author: James Lin, date: 2022/11/21
 	Todo: 1. 傳入參數->progressCSS, 
 		  2. 
 	**********************************************************/	
-	import { ref, onMounted, computed } from "vue"	
+	import { ref, reactive, onMounted, computed } from "vue"	
 	import { useNow, useDateFormat } from "@vueuse/core"
 	import { IconPlusLg, IconX } from '@iconify-prerendered/vue-bi'
 
+	const props = defineProps({
+		mainID: {
+			type: String,
+			required: true,
+			default: ""
+		},		
+		imgboxCSS: {
+			type: String,
+			required: true,
+			default:"h-72"
+		},
+		fieldLabel: {
+			type: String,
+			required: true,
+			default: "欄位標題"
+		},
+		phpurl: {
+			type: String,
+			required: true,
+			default: "/testUpload.php"		
+		},
+		sAccept: {
+			type: String,
+			required: true,
+			default: "image/*"		
+		},
+		liwaFiles: {
+			type: Array,
+			required: true,
+			default: []		
+		},		
+	})
+
+	const state = reactive({
+		mainID: props.mainID,
+		imgboxCSS: props.imgboxCSS,
+		fieldLabel: props.fieldLabel,
+		phpurl: props.phpurl,
+		sAccept: props.sAccept,
+		liwaFiles: props.liwaFiles,
+	})
+
+	const emits = defineEmits(["setFiles"])
+
 	const dropArea = ref(null)
 	const progressBar = ref(null)
-	const uploadProgress = ref([])		
-	const mainID = ref('')
-	const fieldLabel = ref('欄位標題')
-	const progressCSS = ref('h-72')
+	const uploadProgress = ref([])
 	const respText = ref('')
 	const liwaOBJ = ref([])
 	const tmpJSON = ref([])
@@ -42,10 +83,10 @@
 	const handleFiles = (element) => {
 		let files = element.target.files
 		initialProgress(files.length)
-		if (mainID.value == '') {
+		if (state.mainID == '') {
 			const d = new Date()
 			const mainID1 = useDateFormat(useNow(), 'MMDDHHmmss')
-			mainID.value = mainID1.value + d.getMilliseconds()
+			state.mainID = mainID1.value + d.getMilliseconds()
 		}
 		for(let i=0; i<files.length; i++) {
 			uploadFile(files[i], i)					
@@ -66,7 +107,8 @@
 	}
 
 	const uploadFile = (file, i) => {
-		let url = window.sessionStorage.getItem('liwaAPIsvr')+'/testUpload.php' // 上傳檔案的api
+		let url = window.sessionStorage.getItem('liwaAPIsvr') + state.phpurl
+		 // 上傳檔案的api
 		let siteID = window.sessionStorage.getItem('liwaSiteID')
 
 		let xhr = new XMLHttpRequest()
@@ -93,6 +135,7 @@
 					tmpJSON.value.push(respText.value)
 					liwaOBJ.value.push(arrTmp)
 					liwaOBJ.value.push(finalJSON)
+					emits("setFiles", tmpJSON.value)
 				}				
 			} else if (xhr.readyState == 4 && xhr.status !== 200) {
 				// Error, Inform the user
@@ -102,27 +145,37 @@
 
 		formData.append('fileinput', file)
 		formData.append('siteID', siteID)
-		formData.append('mainID', mainID.value)
+		formData.append('mainID', state.mainID)
 		xhr.send(formData)
 	}
 
 	const delOBJ = (iIndex)	=> {
 		let spath = liwaOBJ.value[iIndex].alt
 		let tmpIndex = tmpJSON.value.findIndex(e => e==spath)
-		tmpJSON.value.splice(tmpIndex, 1)
+		tmpJSON.value.splice(tmpIndex, 1)		
 		liwaOBJ.value.splice(iIndex,1)
+		emits("setFiles", tmpJSON.value)
 	}
 
 	onMounted(() => {
+		if (state.liwaFiles.length > 0) {
+			for (let m=0; m<state.liwaFiles.length; m++) {
+				let arrTmp = {
+						"src": window.sessionStorage.getItem('liwaAPIsvr') + state.liwaFiles[m],
+						"alt": 	state.liwaFiles[m]				
+				}
+				tmpJSON.value.push(state.liwaFiles[m])
+				liwaOBJ.value.push(arrTmp)
+			}
+		}
 		liwaOBJ.value.push(finalJSON.value)
 	})
-
 </script>
 
 <template>
 <div class="w-full min-h-[12rem] relative pt-2">
-	<div class="absolute top-1 left-[730px] z-10 text-center bg-white text-lg text-slate-600 px-3">{{ fieldLabel }}</div>
-	<div id="gallery" class="w-[480px] min-h-[12rem] mx-auto mt-2 border-2 border-slate-300 border-dashed rounded-2xl px-4 py-4 flex flex-row flex-wrap overflow-x-hidden overflow-y-auto relative" :class="progressCSS">
+	<div class="absolute top-1 left-2 z-10 text-center bg-white text-lg text-slate-600 px-3">{{ state.fieldLabel }}</div>
+	<div id="gallery" class="w-full min-h-[12rem] mx-auto mt-2 border-2 border-slate-300 border-dashed rounded-2xl px-4 py-4 flex flex-row flex-wrap overflow-x-hidden overflow-y-auto relative" :class="state.imgboxCSS">
 		<div v-for="(item, index) in liwaOBJ" class="w-[120px] m-1 relative">
 			<div v-if="index==liwaOBJ.length-1" class="w-full h-[120px]">
 				<div class="w-full h-full bg-white rounded-2xl border-2 border-dashed border-slate-500 pt-2" @click="showDlg()">
@@ -142,11 +195,10 @@
 		</div>
 	</div>
 
-	<div id="drop-area" ref="dropArea" class="w-[480px] absolute top-0 left-0 border-2 border-slate-300 border-dashed rounded-2xl px-8" :class="areaCSS">
+	<div id="drop-area" ref="dropArea" class="w-[480px] bg-gray-100 absolute top-8 left-4 border-2 border-slate-300 border-dashed rounded-2xl px-8" :class="areaCSS">
 		<form class="mb-6">
 			<p class="my-2">請點擊「選擇檔案」按鈕開啟對話盒</p>
-			<input type="file" id="fileinput" accept="image/*, .pdf" multiple @change="handleFiles">
-			<!-- <label class="button" for="fileinput">請點擊</label> -->
+			<input type="file" id="fileinput" :accept="state.sAccept" multiple @change="handleFiles">
 		</form>
 		<div >
 			<progress id="progress-bar" ref="progressBar" class="w-11/12 h-4 mb-4" max="100" value="0"></progress>		
@@ -157,20 +209,10 @@
 			/>
 		</div>
 	</div>		
-</div>
-
-
+</div>	
 </template>
 
 <style scope>
-	.highlight {
-	  border-color: purple;
-	}
-
-	p {
-	  margin-top: 0;
-	}
-
 	progress[value] {
 		/*appearance:; none;*/
 		border: none;
@@ -183,12 +225,5 @@
 
 	progress[value]::-moz-progress-bar {
 
-	}
-
-	#gallery img {
-	  width: 120px;
-	  margin-bottom: 10px;
-	  margin-right: 10px;
-	  vertical-align: middle;
 	}	
 </style>

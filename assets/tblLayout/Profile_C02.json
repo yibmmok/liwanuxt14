@@ -1,0 +1,5 @@
+[
+	{"colNM":"時間", "colField":"actionDate", "headCSS":"w-1/4", "bodyCSS":"", "slink":"", "iIndex":"1", "sort":"0"},
+	{"colNM":"物件編號", "colField":"prodID", "headCSS":"w-2/4", "bodyCSS":"ml-4", "slink":"", "iIndex":"2", "sort":"0"},
+	{"colNM":"金額", "colField":"amt", "headCSS":"w-1/4", "bodyCSS":"text-right mr-2", "slink":"", "iIndex":"3", "sort":"0"}
+]

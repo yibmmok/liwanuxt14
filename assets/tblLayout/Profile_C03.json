@@ -1,0 +1,6 @@
+[
+	{"colNM":"物件ID", "colField":"prodID", "headCSS":"w-1/5", "bodyCSS":"", "slink":"", "iIndex":"1", "sort":"0"},
+	{"colNM":"物件名稱", "colField":"prodNM", "headCSS":"w-2/5", "bodyCSS":"", "slink":"", "iIndex":"2", "sort":"0"},
+	{"colNM":"待付餘額", "colField":"remainAmt", "headCSS":"w-1/5 text-right mr-1", "bodyCSS":"text-right", "slink":"", "iIndex":"3", "sort":"0"},
+	{"colNM":"付款期限", "colField":"payDeadline", "headCSS":"w-1/5", "bodyCSS":"text-center", "slink":"", "iIndex":"4", "sort":"0"}
+]

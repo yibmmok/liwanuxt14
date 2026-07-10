@@ -52,6 +52,7 @@
 	const arrOrigin = ref([])
 	const arrStatus = ref([{'label':'上架', 'value':1}, {'label':'下架', 'value':0}, {'label':'斡旋', 'value':2}, {'label':'成交', 'value':9}
 	])
+	const bSaveStop = ref(false)
 
 	const sContent = ref('')  // 物件簡介編輯
 	const imgInput = ref(null)  // 用於 tinyMCE編輯, 合約拍照圖
@@ -83,6 +84,9 @@
 	const isMemberDlg = ref(false)
 	const isMemberList = ref(false)
 	const qry041MParam= ref('')
+	const isPrintSellerDlg = ref(false)
+	const arrSellerStock = ref([{"label":"賣家寄存", "value":"1"}, {"label":"賣家不寄存","value":"2"}])
+	const iSellStock = ref('1')
 
 	const InitVal = ref({
 		height: 400,
@@ -127,7 +131,6 @@
 			liwaB4Deal.value.biderContractPath = e.target.result
 		}
 		reader.readAsDataURL(selectedImage)
-		// console.log('liwaB4Deal =', liwaB4Deal.value)
 	}	
 
 	const loadData = async () => {
@@ -162,8 +165,10 @@
 		sWHID.value = liwaData.value.WHID
 		sWHNM.value = liwaData.value.WHNM
 		sStoreID.value = liwaData.value.storeID
-		sellerContractSrc.value = liwaData.value.sellerContractPath
-		// console.log('liwaData =', liwaData.value, 'iScoreSet =', iScoreSet.value)
+		// sellerContractSrc.value = liwaData.value.sellerContractPath
+		if (!liwaData.value.sellerContractPath) {
+			sellerContractSrc.value = window.sessionStorage.getItem('liwaImgsvr') + '/syspics/add_icon.png'
+		}
 	}
 
 	const loadD3 = async () => {
@@ -332,7 +337,6 @@
 	}	
 
 	const setScore = (state) => {
-		// console.log('state =', state)
 		// 只有未評分才重新設定評分
 		liwaData.value.gemSys = state.gemSys
 		liwaData.value.score = state.iTotal	
@@ -343,59 +347,64 @@
 	}
 
 	const saveData = async () => {
-		if (!(['A','C','D'].includes(liwaData.value.gemSys))) liwaData.value.gemSys = 'B'
-		if (action.value == 'add') {
-			liwaData.value.mainID = mainID.value
-		}
-		if (action.value == 'view') {
-			action.value = 'edit'
-		}
-		if (action.value == 'edit')	{
-			liwaData.value.D3 = liwaPics.value
-			liwaData.value.D4 = liwaPDF.value
-			liwaData.value.delD3 = liwaDelPics.value
-			liwaData.value.delD4 = liwaDelPDF.value
-		}
-		// 若該物件本次已新評分過, 設定 hideScore
-		if (liwaData.value.lblHideScore == '隱藏') 
-			iScoreSet.value = 1
-		else 
-			iScoreSet.value = 0
-			
-		liwaData.value.action = action.value	
-		liwaData.value.JWT = window.localStorage.getItem('liwaJWT')
-		liwaData.value.mktgDescp = sContent.value
-		liwaData.value.hideScore = iScoreSet.value
-		liwaData.value.bNoBG = bNoBG.value
-		liwaData.value.D8 = [...liwaD8.value]
-		let datastr = JSON.stringify(liwaData.value)		
-	    const useMyFetch = createFetch({
-	      baseUrl: APIsvr.value,
-	      fetchOptions: {
-	        mode: 'cors',
-	        headers: new Headers({
-	          'Content-Type': 'multipart/form-data'
-	        }),
-	        body: datastr
-	      }
-	    })
-	    const { data } = await useMyFetch('021_edit.php').post().json()	    
-	    if (!data.value.message) {
-		    if (liwaData.value.action == 'add') {
-		    	mainID.value = data.value.key
-		    	window.location.href = '/021/' + mainID.value
+		if (!bSaveStop.value) {
+			bSaveStop.value = true
+			if (!(['A','C','D'].includes(liwaData.value.gemSys))) liwaData.value.gemSys = 'B'
+			if (action.value == 'add') {
+				liwaData.value.mainID = mainID.value
+			}
+			if (action.value == 'view') {
+				action.value = 'edit'
+			}
+			// if (action.value == 'edit')	{
+				liwaData.value.D3 = liwaPics.value
+				liwaData.value.D4 = liwaPDF.value
+				liwaData.value.delD3 = liwaDelPics.value
+				liwaData.value.delD4 = liwaDelPDF.value
+			// }
+			// 若該物件本次已新評分過, 設定 hideScore
+			if (liwaData.value.lblHideScore == '隱藏') 
+				iScoreSet.value = 1
+			else 
+				iScoreSet.value = 0
+				
+			liwaData.value.action = action.value	
+			liwaData.value.JWT = window.localStorage.getItem('liwaJWT')
+			liwaData.value.mktgDescp = sContent.value
+			liwaData.value.hideScore = iScoreSet.value
+			liwaData.value.bNoBG = bNoBG.value
+			liwaData.value.D8 = [...liwaD8.value]
+			let datastr = JSON.stringify(liwaData.value)
+
+		    const useMyFetch = createFetch({
+		      baseUrl: APIsvr.value,
+		      fetchOptions: {
+		        mode: 'cors',
+		        headers: new Headers({
+		          'Content-Type': 'multipart/form-data'
+		        }),
+		        body: datastr
+		      }
+		    })
+		    const { data } = await useMyFetch('021_edit.php').post().json()	    
+		    if (!data.value.message) {
+			    if (liwaData.value.action == 'add') {
+			    	mainID.value = data.value.key
+			    	window.location.href = '/021/' + mainID.value
+			    } else {
+			    	if (bNuScore.value) {
+			    		loadD7()
+			    		bNuScore.value = false
+			    	}
+			    }
+			    liwaData.value.action = 'view'
+			    showMsg('系統訊息', '存檔已完成', 2)
+			    // alert('存檔已完成')	
 		    } else {
-		    	if (bNuScore.value) {
-		    		loadD7()
-		    		bNuScore.value = false
-		    	}
+		    	showMsg('存檔錯誤', data.value.message, 1)
 		    }
-		    liwaData.value.action = 'view'
-		    showMsg('系統訊息', '存檔已完成', 2)
-		    // alert('存檔已完成')	
-	    } else {
-	    	showMsg('存檔錯誤', data.value.message, 1)
-	    }
+		    bSaveStop.value = false		
+		} 
 	}
 
 	const setMainPic = async (sPath) => {
@@ -423,10 +432,15 @@
 	    }
 	}
 
+	const togglePrintSellerDlg = () => {
+		isPrintSellerDlg.value = !isPrintSellerDlg.value
+	}	
+
 	const printSellerContract = async () => {
 		let keydata = {
 			'JWT': window.localStorage.getItem('liwaJWT'),
 			'sellerID': liwaData.value.sellerID,
+			'iStockMode': iSellStock.value,
 			'prodID': mainID.value
 		}
 		let sQuery = queryString.stringify(keydata)		
@@ -439,6 +453,7 @@
 			let sKey = data_ContractS.data.value.key
 			window.open(APIsvr.value+sKey, '_blank')
 		}
+		isPrintSellerDlg.value = false
 	}
 
 	// 訊息對話盒及設定對話盒相關 starts	
@@ -522,7 +537,8 @@
 			}
 		}
 		liwaPics.value = [...arrFiles]
-		if ((action.value=='add') && (mainID.value == '')) {  // 設定mainID
+		// if ((action.value=='add') && (mainID.value == ''))
+		if ((mainID.value == '')) {  // 設定mainID
 			let sTmpPath = liwaPics.value[0].substr(5, 13)
 			mainID.value = sTmpPath
 		}
@@ -544,7 +560,8 @@
 			}
 		}
 		liwaPDF.value = [...arrFiles]
-		if ((action.value=='add') && (mainID.value == '')) {  // 設定mainID
+		// if ((action.value=='add') && (mainID.value == ''))
+		if ((mainID.value == '')) {  // 設定mainID
 			let sTmpPath = liwaPDF.value[0].substr(5, 13)
 			mainID.value = sTmpPath
 		}		
@@ -616,7 +633,8 @@
 		sWHNM.value = liwaB4Deal.value.WHNM
 		sStoreID.value = liwaB4Deal.value.storeID
 		storeNM.value = liwaB4Deal.value.storeNM
-		biderContractSrc.value = liwaB4Deal.value.biderContractPath
+		if (!liwaData.value.BiderContractPath) biderContractSrc.value = window.sessionStorage.getItem('liwaImgsvr') + '/syspics/add_icon.png' 		
+		// biderContractSrc.value = liwaB4Deal.value.biderContractPath
 		let keydata2 = {
 			"mainID": mainID.value,
 			"memberID": liwaB4Deal.value.sellerID,
@@ -637,7 +655,6 @@
 		payMailConfig.value = JSON.stringify(keydata4)	
 		isB4Deal.value = true
 		isB4DealTbl.value = true
-		// console.log('liwaB4Deal in loadB4Deal =', liwaB4Deal.value)
 	}
 
 	const loadWH = async () => {
@@ -707,8 +724,7 @@
 		liwaB4Deal.value.JWT = window.localStorage.getItem('liwaJWT')
 		liwaB4Deal.value.WHID = sWHID.value
 		liwaB4Deal.value.storeID = sStoreID.value
-		liwaB4Deal.value.biderContractPath = biderContractSrc.value
-		// console.log('liwaB4Deal in saveDeal =', liwaB4Deal.value)	
+		liwaB4Deal.value.biderContractPath = biderContractSrc.value	
 		let datastr = JSON.stringify(liwaB4Deal.value)
 		// console.log('datastr =', datastr)		
 	    const useMyFetch = createFetch({
@@ -826,12 +842,7 @@
 		}
 
 		arrGemSys.value = gemSysData
-	})
-
-	// definePageMeta({
-	//   layout: "default",
-	//   colorMode: "light"
-	// })		
+	})		
 
 </script>
 
@@ -953,7 +964,7 @@
 						<div v-if="(liwaData.sellerID) && (action!=='add')" class="w-full flex flex-col">
 							<div class="w-full flex flex-col lg:flex-row">
 								<div class="w-full h-24 lg:w-1/2 px-8 pt-12 flex flex-row">
-									<div class="w-36 px-4 py-2 rounded-xl bg-blue-500 text-center text-white cursor-pointer" @click="printSellerContract()">列印賣家合約</div>
+									<div class="w-36 px-4 py-2 rounded-xl bg-blue-500 text-center text-white cursor-pointer" @click="togglePrintSellerDlg()">列印賣家合約</div>
 								</div>
 								<div class="w-full lg:w-1/2 lg:ml-8 flex flex-col">
 									<div class="w-full py-2 text-sm text-slate-600"><strong>賣方合約</strong></div>
@@ -1125,18 +1136,16 @@
 				          help="請輸入鑑定師意見"
 				          validation="required"
 				        />
+				        <FormKit
+				        	name="keywords"
+				        	label="關鍵字"
+				        	type="text"
+				        	placeholder="Ex:紅寶石,無優化"
+				        	help="輸入物件的關鍵字,每個關鍵字需以 , 分隔"
+				        />
 					</section>
 					<section v-show="step == stepNames[2]" class="min-h-[calc(100vh_-_30rem)]">
 						<div class="w-full my-1 flex flex-row justify-between">
-<!-- 							<div v-if="arrGemSys.length > 0" class="w-[300px] mx-auto">
-								<FormKit
-									name="gemSys"
-									label="所屬館別"
-									type="select"
-									:options="arrGemSys"
-									help="設定物件所屬館別, 未評分時, 非屬鑽石、翡翠、軟玉的物件一律歸為彩寶, 評分時依物件大類設定, 以免評分出錯"
-								/>								
-							</div> -->
 							<div v-if="Number(liwaData.status) < 2" class="w-24 h-8 mt-4 px-3 py-1 bg-red-400 text-white rounded-full cursor-pointer" @click="resetScoreSet()">重設評分</div>
 						</div>
 						<div v-if="iScoreSet==-1" class="w-full my-4">
@@ -1146,7 +1155,6 @@
 								/>								
 
 						</div>
-						<!-- <div v-if="(iScoreSet == 0) || ($iScoreSet == 1)"> -->
 						<div v-else>	
 							<h2 class="w-full text-2xl font-bold">評分結果:<span class="text-2xl text-blue-500 font-semibold ml-2">{{ liwaData.score }}</span></h2>
 							<div v-if="liwaData.score > 0">
@@ -1579,6 +1587,28 @@
 					</div>
 				</div>
 			</div>
+		</div>
+	</Teleport>
+	<Teleport to="body">
+		<div v-if="isPrintSellerDlg" class="w-[100vw] h-[100vh] absolute top-0 left-0 bg-transparent z-[500]">
+		<div class="w-full h-full bg-transparent relative">
+			<div class="w-full lg:w-[450px] min-h-[16rem] lg:mx-auto mt-[200px] flex flex-col bg-slate-200 p-4 relative">
+				<div class="w-full lg:h-[240px] p-2 border-2 border-gray-400 rounded-md">
+					<FormKit
+						type="radio"
+						label="賣家物件是否寄存?"
+						v-model="iSellStock"
+						:options="arrSellerStock"
+					/>
+					<div class="w-full h-16 pl-8 absolute bottom-4 left-4">
+						<div class="w-28 h-12 py-3 text-center bg-emerald-500 text-white cursor-pointer" @click="printSellerContract()">列印</div>
+					</div>
+					<div class="w-10 h-10 bg-slate-200 absolute bottom-10 left-[11rem] cursor-pointer" @click="togglePrintSellerDlg()">
+						<IconX class="w-10 h-10 mt-[2px] ml-[1px] text-red-400 font-bold" />
+					</div>						
+				</div>
+			</div>
+		</div>
 		</div>
 	</Teleport>
 </NuxtLayout>

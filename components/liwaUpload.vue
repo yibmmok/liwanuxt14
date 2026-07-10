@@ -188,7 +188,7 @@
 <template>
 <div class="w-full min-h-[12rem] relative pt-2">
 	<div class="absolute top-1 left-2 z-10 text-center bg-white text-lg text-slate-600 px-3">{{ state.fieldLabel }}</div>
-	<div id="gallery" class="w-full min-h-[12rem] mx-auto mt-2 border-2 border-slate-300 border-dashed rounded-2xl px-4 py-4 flex flex-row flex-wrap overflow-x-hidden overflow-y-auto relative" :class="state.imgboxCSS">
+	<div v-if="liwaOBJ.length > 0" id="gallery" class="w-full min-h-[12rem] mx-auto mt-2 border-2 border-slate-300 border-dashed rounded-2xl px-4 py-4 flex flex-row flex-wrap overflow-x-hidden overflow-y-auto relative" :class="state.imgboxCSS">
 		<div v-for="(item, index) in liwaOBJ" class="w-[120px] m-1 relative">
 			<div v-if="index==liwaOBJ.length-1" class="w-full h-[120px]">
 				<div class="w-full h-full bg-white rounded-2xl border-2 border-dashed border-slate-500 pt-2" @click="showDlg()">

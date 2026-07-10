@@ -37,6 +37,7 @@
 	const sEPaper = ref('是')
 	const bEditBox = ref(false)
 	const sMail = ref('')
+	const debug = ref(false)
 
 	const imgInput = ref(null)
 	const InitVal = ref({
@@ -83,7 +84,7 @@
 		stitle.value = detailName.value 
 		sContent.value = liwaData.value.content		
 		liwaD1.value = data.data.value.arrD1
-		console.log('liwaD1 in loadData =', liwaD1.value)
+		
 	}
 
 	const loadClub = async () => {
@@ -129,9 +130,7 @@
 	// 設定對話盒及設定對話盒相關 ends
 
 	const delReceiver = (idx) => {
-		console.log('idx in delReceiver =', idx)
 		liwaD1.value.splice(idx)
-		console.log('liwaD1 in delReceiver =', liwaD1.value)
 	}
 
 	const saveData = async () => {
@@ -213,7 +212,7 @@
 			'D1': liwaD1.value
 		}
 		let datastr = JSON.stringify(keydata)
-		console.log('datastr =', datastr)
+		// console.log('datastr =', datastr)
 		
 	    	const useMyFetch = createFetch({
 	      baseUrl: APIsvr.value,
@@ -227,7 +226,7 @@
 	    	})
 	    const { data } = await useMyFetch('A13_sendMail.php').post().json()
 	    let msg = data.value.message
-	    console.log('msg =', msg)		
+	    // console.log('msg =', msg)		
 
 	}
 
@@ -313,7 +312,7 @@
 
 <template>
 <NuxtLayout name="default">
-<banner v-if="liwaData.length > 0"
+<banner v-if="mainID"
 	:progname="progName"
 	:proglink="proglink"
 	:detailflg="detailFlg"
@@ -328,7 +327,7 @@
 			<div class="top-icon add ml-2 -mt-1" @click="sendMail()">
 				<IconEmail class="w-7 h-7 text-gray-100 font-bold" />
 			</div>
-			<div class="top-icon add ml-2 -mt-1" @click="testProc()">
+			<div v-if="debug" class="top-icon add ml-2 -mt-1" @click="testProc()">
 				<IconAirplane class="w-7 h-7 text-gray-100 font-bold" />
 			</div>
 		</div>

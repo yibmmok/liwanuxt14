@@ -73,7 +73,7 @@
 		</div>
 			
 	</div>
-	<div class="w-[20px] py-2 absolute top-6 right-4"
+	<div class="w-[20px] py-2 absolute right-4"
 		@click="toggleMenu"
 	>
 		<IconCaretDownFill class="w-7 h-7 text-slate-600 font-bold"/>

@@ -475,7 +475,7 @@
 				<th v-for="(item, index) in liwaHead" class="thPanel relative text-white bg-violet-900" :class="item.headCSS">
 					<div v-if="item.isOrder == 1" class="flex flex-row">
 						<div v-if="state.canEdit">
-							<div v-if="index==0" class="w-8 h-8 border-4 border-amber-400 -ml-[0.825rem]" @click="toggleChkAll()">
+							<div v-if="index==0" class="w-8 h-8 border-4 border-amber-400 ml-[0.125rem]" @click="toggleChkAll()">
 								<div v-if="isChkAllMode == 1" class="-mx-1 -mt-2">
 									<IconCheck class="w-7 h-7 mt-1 text-amber-300 font-bold" />
 								</div>

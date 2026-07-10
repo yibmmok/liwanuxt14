@@ -8,6 +8,7 @@
 	import { useStorage, useFetch, createFetch } from "@vueuse/core"
 	import queryString from "query-string"
 	import TinyMceEditor from "@tinymce/tinymce-vue"
+	import { IconArrowLeft } from '@iconify-prerendered/vue-bi'
 
 	const debug = ref(1)
 	const mainID = ref('')
@@ -18,6 +19,9 @@
 	const submitted = ref(false)
 	const submitted2 = ref(false)
 	const newpass1 = ref('')
+	const bList = ref(true)
+	const bContent = ref(false)
+	const iShowMode = ref(-1)
 	//圖檔處理變數
 	const imgInput = ref(null)
 	const imgInput2 = ref(null)
@@ -29,8 +33,21 @@
 	const isMsg = ref(false)
 
 	const setActive = (sID) => {
+		if (iShowMode.value < 3) {
+			bList.value = false
+			bContent.value = true
+		} else {
+			bList.value = true
+			bContent.value = true
+		}
 		let sGroup = sID.substr(0, 1)
 		step.value = sID
+		console.log('bList =', bList.value, 'bContent =', bContent.value)
+	}
+
+	const backList = () => {
+		bContent.value = false
+		bList.value = true
 	}
 
 	// 圖檔處理 starts
@@ -237,6 +254,9 @@
 		APIsvr.value = window.sessionStorage.getItem('liwaAPIsvr')
 		loadData()
 		loadData004()
+		iShowMode.value = useShowmode()
+		if (iShowMode.value == 3) bContent.value = true
+		console.log('bList =', bList.value, 'bContent =', bContent.value)
 	})
 </script>
 
@@ -244,14 +264,18 @@
 <NuxtLayout name="default">	
 	<div class="w-full bg-slate-200 px-4 py-2">
 		<div class="w-full flex flex-row justify-start">
-			<div class="w-full lg:w-[320px] p-2 border-[0.125rem] border-slate-400">
-				<div class="actItem">我的雲系統<div class="btnGT" @click="setActive('A01')">&gt;</div></div>
-				<div class="actItem">基本資料設定<div class="btnGT" @click="setActive('A02')">&gt;</div></div>
-				<div class="actItem mb-4">變更密碼<div class="btnGT" @click="setActive('A03')">&gt;</div></div>
+			<div v-if="bList" class="w-full lg:w-[320px] p-2 border-[0.125rem] border-slate-400">
+				<div class="actItem" @click="setActive('A01')">我的雲系統<div class="btnGT">&gt;</div></div>
+				<div class="actItem" @click="setActive('A02')">基本資料設定<div class="btnGT">&gt;</div></div>
+				<div class="actItem mb-4" @click="setActive('A03')">變更密碼<div class="btnGT">&gt;</div></div>
 			</div>
-			<div class="hidden lg:block w-[calc(100vw_-_350px)] min-h-[calc(100vh_-_130px)] ml-4 border-[0.125rem] border-slate-300 bg-gray-100">
+			<div v-if="bContent" class="w-full lg:w-[calc(100vw_-_350px)] min-h-[calc(100vh_-_130px)] ml-4 border-[0.125rem] border-slate-300 bg-gray-100 relative">
+				<div v-if="iShowMode < 3" class="w-8 h-8 absolute top-1 left-2" @click="backList()">
+					<IconArrowLeft class="w-7 h-7 text-white font-bold" />
+				</div>
 				<section v-show="step=='A01'">
-					<div class="w-full py-2 text-lg text-center text-white bg-slate-800">已加入的雲系統列表</div>
+					<div class="w-full py-2 text-lg text-center text-white bg-slate-800">已加入的雲系統列表
+					</div>
 					<div class="w-full min-h-[380px] bg-white border-2 border-slate-300 overflow-x-hidden overflow-y-auto">
 						<div v-for="(object, index) in liwa004" class="w-full py-2 px-8 border-y-2 border-y-dashed border-y-slate-400 flex flex-row cursor-pointer" @click="setA03(index)">
 							<img :src="object.logoPic" width="48" />
@@ -260,14 +284,15 @@
 					</div>
 				</section>
 				<section v-show="step=='A02'">
+					<div class="w-full py-2 text-lg text-center text-white bg-slate-800">基本資料設定</div>					
 					<div class="w-full h-full mx-auto my-0 lg:max-w-[1024px] bg-white">
-						<div class="w-full bg-white mx-auto my-2 rounded-xl pb-1">
+						<div class="w-full bg-white mx-auto my-0 rounded-xl pb-1">
 							<FormKit 
-							form-class="px-4 py-2 bg-gray-200 rounded-2xl w-full"
+							form-class="px-4 pb-2 bg-gray-200 rounded-2xl w-full"
 							type="form"
 							v-model="liwaData"
 							:form-class="submitted? 'hidden': 'block'"
-							style="margin: 1rem auto;"
+							style="margin: 0 auto;"
 							submit-label="存檔"
 							@submit="saveData()"
 							>
@@ -350,6 +375,8 @@
 
 				</section>
 				<section v-show="step=='A03'">
+					<div class="w-full py-2 text-lg text-center text-white bg-slate-800">設定密碼
+					</div>						
 					<div class="w-full lg:w-[768px] h-[82vh] mx-auto my-1 bg-white px-4 py-2">
 						<FormKit 
 					        form-class="px-4 py-2 bg-yellow-200 rounded-2xl w-11/12"
@@ -426,7 +453,7 @@
 	}
 
 	.actItem {
-		max-width:300px;
+		max-width:100%;
 		line-height:4rem;
 		border:1px solid #888;
 		padding-left:1rem;

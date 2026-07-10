@@ -73,8 +73,16 @@
 		    let sMsg = data.value.message
 		    if (sMsg) msg.value = data.value.message
 		    else msg.value = data.value.key
+/*		    
+		    if (sMsg) {
+		    	showMsg('系統訊息', sMsg, 2)
+		    } else {
+		    	msg.value = data.value.key
+		    	showMsg('系統訊息', msg.value, 2)
+		    }  */
 		} else {
 			msg.value = '請輸入註冊時的email'
+			// showMsg('系統訊息', '請輸入註冊時的email', 2)
 		}
 	}	
 

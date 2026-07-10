@@ -40,7 +40,7 @@
 		action.value = 'edit'
 		liwaData.value.mainID = mainID.value
 		liwaData.value.JWT = window.localStorage.getItem('liwaJWT')
-		let res = liwaDetail1.value.filter((m) => m.label == '信仲科技')
+		let res = liwaDetail1.value.filter((m) => m.label == '總部')
 		liwaData.value.ownerID = res[0].value
 		detailName.value = liwaData.value.progName
 		stitle.value = detailName.value + ' 的資料'

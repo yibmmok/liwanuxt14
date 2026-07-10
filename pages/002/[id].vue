@@ -3,7 +3,7 @@
 	prog name: 使用者明細CRUD, author: James Lin, date: 2020/04/19
 
 	**********************************************************/
-	import { ref, reactive, onMounted, computed } from "vue"
+	import { ref, reactive, onMounted, computed, watch } from "vue"
 	import { useFetch, createFetch, useTitle } from "@vueuse/core"
 	import queryString from "query-string"
 	import banner from "../../components/banner"
@@ -23,6 +23,7 @@
 	const imgInput = ref(null)
 	const isMsg = ref(false)
 	const isConfig = ref(false)
+	const bIconLock = ref(false)
 	const debug = ref(1)
 
 	const loadData = async () => {
@@ -37,9 +38,9 @@
 		liwaData.value.action = 'edit'
 		liwaData.value.JWT = window.localStorage.getItem('liwaJWT')
 		liwaData.value.mainID = mainID.value
-		// let sIconPath = liwaData.value.iconPath
-		// liwaData.value.iconPath = window.sessionStorage.getItem('liwaImgsvr') + sIconPath
-		// liwaData.value.picpath = window.sessionStorage.getItem('liwaImgsvr') + sIconPath
+		if ((liwaData.value.iconPath !== '/syspics/man-icon.png') && (liwaData.value.iconPath !== '/syspics/woman-icon.png')) {bIconLock.value = true
+		}
+		liwaData.value.iconPath = window.sessionStorage.getItem('liwaImgsvr') + liwaData.value.iconPath
 		detailName.value = liwaData.value.username
 		stitle.value = detailName.value + ' 的資料'
 	}
@@ -53,15 +54,7 @@
 		let url = `${APIsvr.value}/002_haveGroup.php?${sQuery}`
 		const detail1 = await useFetch(url, {method: 'GET'}, {refetch: true}).get().json()
 		let arrDetail1 = detail1.data.value.arrSQL
-		let arrTmp = []
-		for (let i=0; i<arrDetail1.length; i++) {
-			let objItem = {
-				label:arrDetail1[i].uGroupName,
-				value:arrDetail1[i].uGroupID,
-			}
-			arrTmp.push(objItem)
-		}
-		liwaDetail1.value = arrTmp
+		liwaDetail1.value = arrDetail1
 	}
 
 	const callDialog = () => {
@@ -71,6 +64,7 @@
 	const handleImage = (e) => {
 		const selectedImage = e.target.files[0]
 		createBase64Image(selectedImage)
+		bIconLock.value = true
 	}
 
 	const createBase64Image = (fileObject) => {
@@ -87,7 +81,7 @@
 	}
 
 	const clearData = () => {
-		let sImgsvr = window.localStorage.getItem('liwaJWT')
+		let sImgsvr = window.sessionStorage.getItem('liwaImgsvr')
 		let tmpData = {
 			'action':'add',
 			'JWT': window.localStorage.getItem('liwaJWT'),
@@ -121,7 +115,6 @@
 		if (liwaData.value.action == 'view') liwaData.value.action = 'edit'
 		if (debug.value == 1) liwaData.value.debug = debug.value
 		let datastr = JSON.stringify(liwaData.value)
-	// console.log('datastr =', datastr)
 	    const useMyFetch = createFetch({
 	      baseUrl: APIsvr.value,
 	      fetchOptions: {
@@ -177,14 +170,17 @@
 		isConfig.value = false
 	}
 	// 訊息對話盒及設定對話盒相關 ends
-	const iconSrc = computed(() => {
-		let iconHead = liwaData.value.iconPath.substr(0, 5)
-		let AA = liwaData.value.iconPath
-		if (iconHead !== 'data:') {
-			AA = (liwaData.value.gender == '先生') ? window.sessionStorage.getItem('liwaImgsvr') + '/syspics/man-icon.png': window.sessionStorage.getItem('liwaImgsvr') + '/syspics/woman-icon.png'
-			liwaData.value.iconPath = AA
+
+	watch(() => liwaData.value.gender, (Val, oldVal) => {
+		if (Val !== oldVal) {
+			if (!bIconLock.value) {
+				if (Val == '先生') {
+					liwaData.value.iconPath = window.sessionStorage.getItem('liwaImgsvr') + '/syspics/man-icon.png'
+				} else {
+					liwaData.value.iconPath = window.sessionStorage.getItem('liwaImgsvr') + '/syspics/woman-icon.png'
+				}
+			}
 		}
-		return AA
 	})
 
 	// 訊息對話盒及設定對話盒相關 ends
@@ -202,12 +198,7 @@
 		} else {
 			clearData()
 		}
-	})
-
-	// definePageMeta({
-	//   layout: "default",
-	//   colorMode: "light"
-	// })		
+	})	
 
 </script>
 
@@ -249,7 +240,7 @@
 				<div class="w-full h-[200px]">
 					<img 
 					class="mx-auto border-2 w-[200px] h-full"
-					:src="iconSrc" 
+					:src="liwaData.iconPath" 
 					width="200" 
 					:alt="liwaData.username" 
 					@click="callDialog"

@@ -72,6 +72,8 @@
 	const APIsvr = ref('')
 	const Imgsvr = ref('')
 	const route = useRoute()
+	const iTotalRec = ref(0)
+	const arrPagesize = ref([{"label":"","value":""}, {"label":"10","value":"10"},{"label":"25","value":"25"}, {"label":"無限","value":"-1"}])
 
 	const state = reactive({
 		'tblTitle': props.tblTitle,
@@ -88,7 +90,7 @@
 		if (liwaData.value.length) liwaData.value = []
 		let keydata = {
 			'JWT': window.localStorage.getItem('liwaJWT'),
-			'params': paramstr.value,
+			'params': state.params,
 			'page':state.page,
 			'pageSize':state.pageSize,
 			'orderCol': orderCol.value,
@@ -100,6 +102,7 @@
 		const data = await useFetch(url, {method: 'GET'}, {refetch: true}).get().json()
 	    if (data.data.value.arrSQL.length > 0) {
 			liwaData.value = data.data.value.arrSQL
+			iTotalRec.value = data.data.value.totRec
 			liwaData.value.forEach((item) => {
 				item.isShow = 0
 				item.isChecked = 0
@@ -304,7 +307,8 @@
 			}
 		})
 		const { data } = await useMyFetch(state.dataUrl).post().json()
-		if (!data.value.message) {
+		let msg = data.value.message
+		if (!msg) {
 			loadData()
 		} else {
 			// 送出錯誤訊息
@@ -313,6 +317,12 @@
 		arrChklist.value = []
 		emits('setChecked', arrChklist.value)
 	}
+
+	watch(()=>state.pageSize, (Val, oldVal) => {
+		if (Val !== oldVal) {
+			loadData()
+		}
+	})
 
 	onMounted(() => {
 		APIsvr.value = window.sessionStorage.getItem('liwaAPIsvr')
@@ -326,7 +336,7 @@
 </script>
 
 <template>
-<div class="w-full min-h-[100vh] lg:min-h-[calc(100vh_-_235px)] border-2 border-gray-400">
+<div class="w-full min-h-[100vh] lg:min-h-[calc(100vh_-_235px)] border-2 border-gray-400 relative">
 	<div class="barPanel h-12 rounded-3xl ml-2 mb-2 px-1 relative">
 		<slot>
 			<div v-if="state.showBtns" class="py-2 absolute left-0 top-2 flex flex-row">
@@ -340,11 +350,26 @@
 					<IconTrash class="w-7 h-7 text-white font-bold" />
 				</div>
 			</div>
+			<slot name="additional">
+			</slot>
 		</slot>
 		<slot name="FullBtns"></slot>
 		<div class="w-full px-2 text-center">{{ tblTitle }}</div>	
+		<div class="absolute top-2 right-4 py-2 text-sm">總筆數: {{ iTotalRec }}</div>
+		<div class="w-40 absolute top-2 right-[7rem] flex flex-row">
+			<div class="w-16 text-right mr-2 mt-2 text-sm">筆數/頁</div>
+			<FormKit
+				label=""
+				type="select"
+				v-model="state.pageSize"
+				:options="arrPagesize"
+				:outer-class="'m-0'"
+				:wrapper-class="'mt-2'"
+				:inner-class="'h-6 text-sm'"
+			/>
+		</div>
 	</div>
-    <div v-if="liwaHead.length > 0" class="w-[99%] h-[calc(100vh_-_285px)] mx-[0.4%] shadow border-b border-gray-500 bg-white overflow-x-hidden overflow-y-auto">
+    <div class="w-[99%] h-[calc(100vh_-_285px)] mx-[0.4%] shadow border-b border-gray-500 bg-white overflow-x-hidden overflow-y-auto">
 		<table class="min-w-full divide-x divide-y divide-gray-200 bg-white">
 			<thead class="min-w-full bg-white ring-1 ring-gray-200">
 				<tr class="bg-emerald-600">
@@ -358,7 +383,7 @@
 									<IconDash class="w-7 h-7 -ml-[0.125rem] -mt-[.125rem] text-amber-300 font-bold" />
 								</div>
 							</div>							
-							<div class="w-[calc(100%_-_2rem)] py-2" @click="setOrder(index)">
+							<div class="w-[calc(100%_-_2rem)] py-2 text-md" @click="setOrder(index)">
 								{{ item.colNM }}
 							</div>
 							<div v-if="item.sort > 0" class="w-8 ">
@@ -373,7 +398,7 @@
 							</div>
 						</div>
 						<div v-else>
-							<div class="w-full">
+							<div class="w-full text-md">
 								{{ item.colNM }}
 							</div>						
 						</div>
@@ -386,7 +411,7 @@
 					v-for="(object, index) in liwaData"
 					:key="index"
 				>
-					<td scope="col" class="border-b py-1 text-sm font-medium text-gray-500 uppercase tracking-wider" :class="liwaHead[index1-1].headCSS" v-for="index1 in liwaHead.length">
+					<td scope="col" class="border-b py-1 text-sm font-medium text-slate-950 font-semibold uppercase tracking-wider" :class="liwaHead[index1-1].headCSS" v-for="index1 in liwaHead.length">
 						<div class="w-full border-r-2 odd:border-r-gray-300 even:border-r-slate-800 cursor-pointer flex flex-row" >
 							<div>
 								<!-- 核可方塊 -->
@@ -418,6 +443,7 @@
 			</tbody>
 		</table>
     </div>
+    <div v-if="liwaData.length == 0" class="w-48 h-20 p-4 absolute top-[200px] left-[calc(50%_-_3rem)] text-center border-2 border-slate-200 text-2xl rounded-lg bg-gray-100">尚無資料</div>
 </div>
 <div v-if="liwaData.length" class="w-full bg-slate-200 px-4 py-2">
 	<!-- 頁碼控制 -->

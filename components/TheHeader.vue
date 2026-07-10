@@ -61,6 +61,10 @@
 		return (sJWT)?'/A03':'/'
 	}
 
+	const goSearch = () => {
+		window.location.href='/Search'
+	}
+
 	const goProfile = () => {
 		window.location.href='/Profile'
 	}
@@ -129,7 +133,7 @@
 					</div>
 				</a>
 				<div class="sysIcon search mx-1 mt-3">
-					<IconSearch class="w-7 h-7 text-black font-bold" />
+					<IconSearch class="w-7 h-7 text-black font-bold" @click="goSearch()"/>
 				</div>
 				<div v-if="bIcon" class="sysIcon userIcon mx-1 mt-3" @click="goProfile()">
 					<img :src="userIcon" class="w-8 h-8 rounded-full" />

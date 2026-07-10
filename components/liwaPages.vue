@@ -25,7 +25,8 @@
 	const setPages = () => {
 		let actvClass = ''
 		let totItems = arrPage.value.length
-		if (state.totalPage < (totItems - 1)) {
+		console.log('arrPage =', arrPage.value, 'totItems =', totItems)
+		if (state.totalPage <= (totItems - 1)) {
 			// 若總頁數少於arrPage.length的處理
 			for(let i=0; i<state.totalPage; i++) {
 				// 為當前頁設定class

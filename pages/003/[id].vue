@@ -17,6 +17,7 @@
 	const detailFlg = ref(true)
 	const detailName = ref('')
 	const APIsvr = ref('')
+	const bShowTbl = ref(false)
 	const liwaData = ref({progName:'', iAuth:0})
 	const liwaD1 = ref({})
 	const liwaChild = ref({})
@@ -29,6 +30,7 @@
 	const actvProgName = ref('')
 	const actvAuth = ref(1)
 	const actvIndex = ref(0)
+	const bShowProg = ref(false)
 	// liwaMsg 初始值
 	const isMsg = ref(false)
 	const objMsg = reactive({
@@ -64,11 +66,13 @@
 		let url = `${APIsvr.value}/003_haveUGprog.php?${sQuery}`
 		const data = await useFetch(url, {method: 'GET'}, {refetch: true}).get().json()
 		liwaD1.value = data.data.value.arrSQL
+		liwaSel1.value = []
 		liwaD1.value.forEach((n1) => {
 			if (n1.bUsed == '0') {
 				liwaSel1.value.push({'label': n1.LMName, 'value':n1.progID})
 			}
 		})
+		console.log('liwaD1 =', liwaD1.value)
 	}
 
 	const setProgID = (sID) => {
@@ -85,6 +89,8 @@
 
 	const addD1 = () => {
 		// 在 liwaData 新增一筆
+		bShowProg.value = false
+		actvProgName.value = ''
 		let keydata = {
 			'LMID': '',
 			'LMName': '',
@@ -98,6 +104,9 @@
 			'slink': ''
 		}
 		liwaData.value.push(keydata)
+		setTimeout(() => {
+			bShowProg.value = true
+		}, 1000)
 		bEditBox.value = 1
 		action.value = 'add'
 		actvIndex.value = liwaData.value.length - 1
@@ -116,49 +125,60 @@
 	}
 
 	const saveD1 = async () => {
-		liwaChild.value.JWT = window.localStorage.getItem('liwaJWT')
-		liwaChild.value.iAuth = actvAuth.value
-		liwaChild.value.action = action.value
-		let actvLMID = liwaChild.value.LMID
-		let datastr = JSON.stringify(liwaChild.value)
-	    const useMyFetch = createFetch({
-	      baseUrl: APIsvr.value,
-	      fetchOptions: {
-	        mode: 'cors',
-	        headers: new Headers({
-	          'Content-Type': 'multipart/form-data'
-	        }),
-	        body: datastr
-	      }
-	    })
-	    const { data } = await useMyFetch('003_editD1.php').post().json()
-	    if (!data.value.message) {
-	    	if (action.value == 'edit') {
-	    		// 編輯模式, 將liwaChild.value 設到 liwaData.value
-	    		let nuLMID = liwaChild.value.uGroupID + liwaChild.value.progID
-	    		liwaData.value[actvIndex.value].LMID = nuLMID
-	    	} 
-	    
-	    	liwaData.value[actvIndex.value].LMName = liwaChild.value.LMName
-	    	liwaData.value[actvIndex.value].authLimit = liwaChild.value.authLimit
-	    	liwaData.value[actvIndex.value].groupName = liwaChild.value.groupName
-	    	liwaData.value[actvIndex.value].iAuth = liwaChild.value.iAuth
-	    	liwaData.value[actvIndex.value].isShow ="0"
-	    	liwaData.value[actvIndex.value].lang = "tw"
-	    	liwaData.value[actvIndex.value].progID = liwaChild.value.progID
-	    	liwaData.value[actvIndex.value].progName = liwaChild.value.progName
-	    	liwaData.value[actvIndex.value].slink = liwaChild.value.slink
-	    	// console.log('liwaData =', liwaData.value)
-	    } else {
-			showMsg('存檔錯誤', data.value.message, 1)
-	    } 
-    	// 先關閉 editBox
-    	bEditBox.value = 0
-		liwaData.value[actvIndex.value].isShow = '0'	    
-	    action.value = 'view'  		
+		if (liwaChild.value.progID!=='') {
+			bShowTbl.value = false
+			liwaChild.value.JWT = window.localStorage.getItem('liwaJWT')
+			liwaChild.value.iAuth = actvAuth.value
+			liwaChild.value.action = action.value
+			let actvLMID = liwaChild.value.LMID
+			let datastr = JSON.stringify(liwaChild.value)
+		    const useMyFetch = createFetch({
+		      baseUrl: APIsvr.value,
+		      fetchOptions: {
+		        mode: 'cors',
+		        headers: new Headers({
+		          'Content-Type': 'multipart/form-data'
+		        }),
+		        body: datastr
+		      }
+		    })
+		    const { data } = await useMyFetch('003_editD1.php').post().json()
+		    if (!data.value.message) {
+/*
+		    	if (action.value == 'edit') {
+		    		// 編輯模式, 將liwaChild.value 設到 liwaData.value
+		    		let nuLMID = liwaChild.value.uGroupID + liwaChild.value.progID
+		    		liwaData.value[actvIndex.value].LMID = nuLMID
+		    	} 
+		    
+		    	liwaData.value[actvIndex.value].LMName = liwaChild.value.LMName
+		    	liwaData.value[actvIndex.value].authLimit = liwaChild.value.authLimit
+		    	liwaData.value[actvIndex.value].groupName = liwaChild.value.groupName
+		    	liwaData.value[actvIndex.value].iAuth = liwaChild.value.iAuth
+		    	liwaData.value[actvIndex.value].isShow ="0"
+		    	liwaData.value[actvIndex.value].lang = "tw"
+		    	liwaData.value[actvIndex.value].progID = liwaChild.value.progID
+		    	liwaData.value[actvIndex.value].progName = liwaChild.value.progName
+		    	liwaData.value[actvIndex.value].slink = liwaChild.value.slink
+*/
+		    	loadData()
+		    	
+		    	// console.log('liwaData =', liwaData.value)
+		    } else {
+					showMsg('存檔錯誤', data.value.message, 1)
+		    } 
+	    	// 先關閉 editBox
+	    	bEditBox.value = 0
+	    	loadD1()
+				liwaData.value[actvIndex.value].isShow = '0'	    
+		    action.value = 'view'
+		    bShowTbl.value = true		
+		}
+ 		
 	}
 
 	const delD1 = async (sID) => {
+		console.log('sID =', sID)
 		actvIndex.value = liwaData.value.findIndex((m) => m.LMID == sID)
 		liwaChild.value.JWT = window.localStorage.getItem('liwaJWT')
 		liwaChild.value.LMID = sID
@@ -180,7 +200,7 @@
 	    	loadD1()
 	    } else {
 	    	// 顯示錯誤訊息
-			showMsg('刪除錯誤', data.value.message, 1)
+				showMsg('刪除錯誤', data.value.message, 1)
 	    } 
 	    action.value = 'view'  	    
 	}
@@ -227,7 +247,8 @@
     	mainID.value = route.params.id
 		// 設定載入的資料
 		loadData()
-		loadD1()	
+		loadD1()
+		bShowTbl.value = true	
 	})
 
 	// definePageMeta({
@@ -265,7 +286,7 @@
 		<div class="w-full flex flex-row mt-4">
 			<div class="w-full sm:h-96 md:h-[36rem] lg:h-[44rem] min-h-full -my-2 overflow-auto sm:-mx-6 lg:-mx-2">
 				<div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-					<div class="shadow border-b border-gray-500 bg-white">
+					<div v-if="bShowTbl" class="shadow border-b border-gray-500 bg-white">
 						<table class="min-w-full divide-x divide-y divide-gray-200 bg-white">
 							<thead class="bg-gray-50">
 								<tr class="bg-emerald-300">
@@ -301,7 +322,7 @@
 											<div v-if="bEditBox!==0" 
 											class="w-full h-20 flex flex-row"
 											>
-												<div class="w-2/5 h-20 pl-2 relative">
+												<div v-if="bShowProg" class="w-2/5 h-20 pl-2 relative">
 													<FormKit
 														type="liwaDrop"
 														name="progID"
